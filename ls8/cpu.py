@@ -7,7 +7,12 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+        # self.ir = self.ram_read(self.pc) # Instruction Register DID NOT WORK. WHY?
+        # self.operand_a = self.ram_read(self.pc + 1) # reads next operation incase it needs it DID NOT WORK. WHY?
+        # self.operand_b = self.ram_read(self.pc + 2) # reads next operation incase it needs it DID NOT WORK. WHY?
 
     def load(self):
         """Load a program into memory."""
@@ -60,6 +65,32 @@ class CPU:
 
         print()
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, address, value):
+        self.ram[address] = value
+
     def run(self):
         """Run the CPU."""
-        pass
+
+        HLT = 1
+        LDI = 130
+        PRN = 71
+
+        running = True
+        while running:
+            ir = self.ram[self.pc] # Instruction Register
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            if ir == LDI:
+                self.reg[operand_a] = operand_b # Set the value of a register to an integer
+                # print(self.operand_a)
+                self.pc += 3
+            elif ir == PRN:
+                print(self.reg[operand_a]) # Print numeric value stored in the given register
+                self.pc += 2
+            elif ir == HLT:
+                running = False
+                self.pc += 1
+
