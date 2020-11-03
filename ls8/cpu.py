@@ -9,6 +9,7 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.reg = [0] * 8
+        self.reg[6] = 244 # stack pointer R7 is pointing to 0xF4 
         self.pc = 0
         # self.ir = self.ram_read(self.pc) # Instruction Register DID NOT WORK. WHY?
         # self.operand_a = self.ram_read(self.pc + 1) # reads next operation incase it needs it DID NOT WORK. WHY?
@@ -95,6 +96,8 @@ class CPU:
         LDI = 130
         PRN = 71
         MUL = 162
+        PUSH = 69
+        POP = 70
 
         running = True
         while running:
@@ -114,4 +117,12 @@ class CPU:
             elif ir == MUL:
                 self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
+            elif ir == PUSH:
+                self.reg[6] -= 1 # Decrement the Stack Pointer
+                self.ram_write(self.reg[6], self.reg[operand_a]) # get value in register and put it in top of stack
+                self.pc += 2
+            elif ir == POP:
+                self.reg[operand_a] = self.ram_read(self.reg[6]) # get value in top of stack and put it in register
+                self.reg[6] += 1 # Increment the Stack Pointer
+                self.pc += 2
 
