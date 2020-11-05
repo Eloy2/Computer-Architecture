@@ -98,6 +98,9 @@ class CPU:
         MUL = 162
         PUSH = 69
         POP = 70
+        CALL= 80
+        RET = 17
+        ADD = 160
 
         running = True
         while running:
@@ -106,7 +109,6 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
             if ir == LDI:
                 self.reg[operand_a] = operand_b # Set the value of a register to an integer
-                # print(self.operand_a)
                 self.pc += 3
             elif ir == PRN:
                 print(self.reg[operand_a]) # Print numeric value stored in the given register
@@ -117,6 +119,9 @@ class CPU:
             elif ir == MUL:
                 self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
+            elif ir == ADD:
+                self.alu("ADD",operand_a, operand_b)
+                self.pc += 3
             elif ir == PUSH:
                 self.reg[6] -= 1 # Decrement the Stack Pointer
                 self.ram_write(self.reg[6], self.reg[operand_a]) # get value in register and put it in top of stack
@@ -125,4 +130,12 @@ class CPU:
                 self.reg[operand_a] = self.ram_read(self.reg[6]) # get value in top of stack and put it in register
                 self.reg[6] += 1 # Increment the Stack Pointer
                 self.pc += 2
+            elif ir == CALL:
+                self.reg[6] -= 1 # Decrement the Stack Pointer
+                self.ram_write(self.reg[6], self.pc + 2) # Write the value of the next line to return to in the code
+                self.pc = self.reg[operand_a] # Set the PC to whatever is given to us in the register
+            elif ir == RET:
+                self.pc = self.ram_read(self.reg[6]) # Pop the top of the stack and set the PC to the value of what was popped
+                self.reg[6] += 1 # Increment the Stack Pointer
+
 
