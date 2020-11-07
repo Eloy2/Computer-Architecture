@@ -1,6 +1,7 @@
 """CPU functionality."""
 
 import sys
+import time
 
 class CPU:
     """Main CPU class."""
@@ -11,6 +12,7 @@ class CPU:
         self.reg = [0] * 8
         self.reg[6] = 244 # stack pointer R7 is pointing to 0xF4 
         self.pc = 0
+        self.fl = 0 # flags register
         # self.ir = self.ram_read(self.pc) # Instruction Register DID NOT WORK. WHY?
         # self.operand_a = self.ram_read(self.pc + 1) # reads next operation incase it needs it DID NOT WORK. WHY?
         # self.operand_b = self.ram_read(self.pc + 2) # reads next operation incase it needs it DID NOT WORK. WHY?
@@ -60,6 +62,11 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         elif op == "MUL":
             self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 1
+            else:
+                self.fl = 0
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -101,6 +108,10 @@ class CPU:
         CALL= 80
         RET = 17
         ADD = 160
+        CMP = 167
+        JMP = 84
+        JEQ = 85
+        JNE = 86
 
         running = True
         while running:
@@ -120,7 +131,7 @@ class CPU:
                 self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
             elif ir == ADD:
-                self.alu("ADD",operand_a, operand_b)
+                self.alu("ADD", operand_a, operand_b)
                 self.pc += 3
             elif ir == PUSH:
                 self.reg[6] -= 1 # Decrement the Stack Pointer
@@ -137,5 +148,20 @@ class CPU:
             elif ir == RET:
                 self.pc = self.ram_read(self.reg[6]) # Pop the top of the stack and set the PC to the value of what was popped
                 self.reg[6] += 1 # Increment the Stack Pointer
+            elif ir == CMP:
+                self.alu("CMP", operand_a, operand_b)
+                self.pc += 3
+            elif ir == JMP:
+                self.pc = self.reg[operand_a]
+            elif ir == JEQ:
+                if self.fl == 1:
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
+            elif ir == JNE:
+                if self.fl == 0:
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
 
 
